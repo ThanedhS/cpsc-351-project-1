@@ -35,8 +35,11 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	*/
 	
 	key_t key = ftok("keyfile.txt", 'k');
+
+	std::cout << "Key is " << key << std::endl;
 	
 	/* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
+
 	/* TODO: Attach to the shared memory */
 	/* TODO: Attach to the message queue */
 	/* Store the IDs and the pointer to the shared memory region in the corresponding function parameters */
@@ -56,20 +59,6 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 		std::cout << "Pointer detached from shared memory!" << std::endl;
 	} else {
 		std::cout << "Error attempting to detach shared memory:" << errno << std::endl;
-		exit(-1);
-	}
-	
-	if(shmctl(shmid, IPC_RMID, NULL) == 0) {
-		std::cout << "Removing shmid and destorying shared memory!" << std::endl;
-	} else {
-		std::cout << "Error attempting to destroy shared memory: " << errno << std::endl;
-		exit(-1);
-	}
-
-	if(msgctl(msqid, IPC_RMID, NULL) == 0) {
-		std::cout << "Removing the message queue!" << std::endl;
-	} else {
-		std::cout << "Error attempting to remove the message queue: " << errno << std::endl;
 		exit(-1);
 	}
 }
@@ -116,7 +105,6 @@ unsigned long sendFile(const char* fileName)
 		}
 		
 		/* TODO: count the number of bytes sent. */		
-		//how would we count bytes?
 			
 		/* TODO: Send a message to the receiver telling him that the data is ready
  		 * to be read (message of type SENDER_DATA_TYPE).
@@ -152,17 +140,43 @@ void sendFileName(const char* fileName)
 	/* TODO: Make sure the file name does not exceed 
 	 * the maximum buffer size in the fileNameMsg
 	 * struct. If exceeds, then terminate with an error.
+	 * 
+	 * Done.
 	 */
+	if(fileNameSize > MAX_FILE_NAME_SIZE) {
+		std::cout << "Error! File name exceeds maximum buffer size!" << std::endl;
+		exit(-1);
+	}
 
 	/* TODO: Create an instance of the struct representing the message
 	 * containing the name of the file.
+
+	   Done
 	 */
+	fileNameMsg fileObj;
 
-	/* TODO: Set the message type FILE_NAME_TRANSFER_TYPE */
+	/* TODO: Set the message type FILE_NAME_TRANSFER_TYPE 
 
-	/* TODO: Set the file name in the message */
+		Done
+	*/
+	fileObj.mtype = FILE_NAME_TRANSFER_TYPE;
 
-	/* TODO: Send the message using msgsnd */
+	/* TODO: Set the file name in the message 
+	
+		Done
+	*/
+	strncpy(fileObj.fileName, fileName, fileNameSize);
+
+	/* TODO: Send the message using msgsnd 
+
+		Done
+	*/
+	if(msgsnd(msqid, &fileObj, sizeof(fileNameMsg) - sizeof(long), 0) == 0) {
+		std::cout << "Sending message containing the file's name!" << std::endl;
+	} else {
+		std::cout << "Error sending file name: " << errno << std::endl;
+		exit(-1);
+	}
 }
 
 

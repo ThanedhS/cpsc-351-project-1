@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string>
+#include <iostream>
 #include "msg.h"    /* For the message struct */
 
 using namespace std;
@@ -155,10 +156,26 @@ unsigned long mainLoop(const char* fileName)
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 {
 	/* TODO: Detach from shared memory */
-	
+	if(shmdt(sharedMemPtr) == 0) {
+		std::cout << "Pointer detached from shared memory!" << std::endl;
+	} else {
+		std::cout << "Error attempting to detach shared memory:" << errno << std::endl;
+		exit(-1);
+	}
 	/* TODO: Deallocate the shared memory segment */
-	
+	if(shmctl(shmid, IPC_RMID, NULL) == 0) {
+		std::cout << "Removing shmid and destorying shared memory!" << std::endl;
+	} else {
+		std::cout << "Error attempting to destroy shared memory: " << errno << std::endl;
+		exit(-1);
+	}
 	/* TODO: Deallocate the message queue */
+	if(msgctl(msqid, IPC_RMID, NULL) == 0) {
+		std::cout << "Removing the message queue!" << std::endl;
+	} else {
+		std::cout << "Error attempting to remove the message queue: " << errno << std::endl;
+		exit(-1);
+	}
 }
 
 /**
