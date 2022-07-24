@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <string>
+#include <string.h>
 #include <iostream>
 #include "msg.h"    /* For the message struct */
 
@@ -31,13 +31,18 @@ string recvFileName()
         
 	/* TODO: declare an instance of the fileNameMsg struct to be
 	 * used for holding the message received from the sender.
-         */
 
-        /* TODO: Receive the file name using msgrcv() */
-	
+	 Done
+         */
+	fileNameMsg fileObj;
+
+        /* TODO: Receive the file name using msgrcv()
+			Done
+		 */
+	if(msgrcv(msqid, &fileObj, sizeof(fileNameMsg) - sizeof(long), FILE_NAME_TRANSFER_TYPE, 0));
 	/* TODO: return the received file name */
-	
-        return fileName;
+	fileName = std::string(fileObj.fileName);
+    return fileName;
 }
  /**
  * Sets up the shared memory segment and message queue
