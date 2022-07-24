@@ -196,6 +196,7 @@ int main(int argc, char** argv)
  	 * queue and the shared memory segment before exiting. You may add 
 	 * the cleaning functionality in ctrlCSignal().
  	 */
+	signal(SIGINT, ctrlCSignal);
 				
 	/* Initialize */
 	init(shmid, msqid, sharedMemPtr);
@@ -208,7 +209,9 @@ int main(int argc, char** argv)
 
 	/* TODO: Detach from shared memory segment, and deallocate shared memory 
 	 * and message queue (i.e. call cleanup) 
+
+	 	Done
 	 */
-		
+	cleanUp(shmid, msqid, sharedMemPtr);
 	return 0;
 }
