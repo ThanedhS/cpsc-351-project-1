@@ -64,15 +64,15 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	   on the system has a unique id, but different objects may have the same key.
 	*/
 	
+	key_t key = ftok("keyfile.txt", 'a')
 
 	/* TODO: Allocate a shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
-	
+	shmid = shmget('a', SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR);
 	/* TODO: Attach to the shared memory */
-	
+	sharedMemPtr = (char*)shmat(shmid, NULL, 0);
 	/* TODO: Create a message queue */
-	
+	msqid = msgget('a', S_IRUSR | S_IWUSR | IPC_CREAT);
 	/* TODO: Store the IDs and the pointer to the shared memory region in the corresponding parameters */
-	
 }
  
 
