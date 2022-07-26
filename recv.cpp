@@ -127,7 +127,7 @@ unsigned long mainLoop(const char* fileName)
 		if(msgSize != 0)
 		{
 			/* TODO: count the number of bytes received */
-			
+			numBytesRecv += msgSize;
 			/* Save the shared memory to file */
 			if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0)
 			{
