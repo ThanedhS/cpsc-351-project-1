@@ -40,11 +40,16 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	key_t key = ftok("keyfile.txt", 'a');
 	
 	/* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
-	shmid = shmget('a', SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR);
+	if((shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR | IPC_CREAT)) >= 0) { 
+		std::cout << "Got ID of Shared Memory Segment" << std::endl;
+	} else {
+		std::cout << "Error getting ID of SHMS: " << errno << std::endl;
+		exit(-1);
+	}
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid, NULL, 0);
 	/* TODO: Attach to the message queue */
-	msqid = msgget('a', S_IRUSR | S_IWUSR | IPC_CREAT);
+	msqid = msgget(key, S_IRUSR | S_IWUSR | IPC_CREAT);
 	/* Store the IDs and the pointer to the shared memory region in the corresponding function parameters */
 	
 }
@@ -114,8 +119,8 @@ unsigned long sendFile(const char* fileName)
  		 * to be read (message of type SENDER_DATA_TYPE).
  		 */
 		sndMsg.mtype = SENDER_DATA_TYPE;
-		if((msgsnd(msqid, &sndMsg, numBytesSent, 0)) == 0) {
-			std::cout << "Sent message to receiver!" << std::endl;
+		if((msgsnd(msqid, &sndMsg, sndMsg.size, 0)) >= 0) {
+			std::cout << "Sent message of size " << sndMsg.size <<  " to receiver!" << std::endl;
 		} else {
 			std::cout << "Error when sending message to receiver: " << errno << std::endl;
 			exit(-1);
@@ -124,7 +129,7 @@ unsigned long sendFile(const char* fileName)
 		/* TODO: Wait until the receiver sends us a message of type RECV_DONE_TYPE telling us 
  		 * that he finished saving a chunk of memory. 
  		 */
-		if((msgrcv(msqid, &rcvMsg, 0, RECV_DONE_TYPE, 0)) == 0) {
+		if((msgrcv(msqid, &rcvMsg, 0, RECV_DONE_TYPE, 0)) >= 0) {
 			std::cout << "Received finish flag from receiver!" << std::endl;
 		} else {
 			std::cout << "Error receiving finish: " << errno << std::endl;
@@ -139,7 +144,7 @@ unsigned long sendFile(const char* fileName)
 	  */
 	sndMsg.mtype = SENDER_DATA_TYPE;
 	numBytesSent = 0;
-	if((msgsnd(msqid, &sndMsg, numBytesSent, 0)) == 0) {
+	if((msgsnd(msqid, &sndMsg, numBytesSent, 0)) >= 0) {
 		std::cout << "There is nothing more to send!" << std::endl;
 	} else {
 		std::cout << "Error in closing out message: " << errno << std::endl;
@@ -160,7 +165,6 @@ void sendFileName(const char* fileName)
 {
 	/* Get the length of the file name */
 	int fileNameSize = strlen(fileName);
-
 	/* TODO: Make sure the file name does not exceed 
 	 * the maximum buffer size in the fileNameMsg
 	 * struct. If exceeds, then terminate with an error.
@@ -190,13 +194,14 @@ void sendFileName(const char* fileName)
 		Done
 	*/
 	strncpy(fileObj.fileName, fileName, fileNameSize);
+	fileObj.fileName[fileNameSize] = '\0';
 
 	/* TODO: Send the message using msgsnd 
 
 		Done
 	*/
 	if(msgsnd(msqid, &fileObj, sizeof(fileNameMsg) - sizeof(long), 0) == 0) {
-		std::cout << "Sending message containing the file's name!" << std::endl;
+		std::cout << "Sending message containing the file's name " << fileObj.fileName << "!" << std::endl;
 	} else {
 		std::cout << "Error sending file name: " << errno << std::endl;
 		exit(-1);
@@ -218,7 +223,7 @@ int main(int argc, char** argv)
 	init(shmid, msqid, sharedMemPtr);
 	
 	/* Send the name of the file */
-        sendFileName(argv[1]);
+    sendFileName(argv[1]);
 		
 	/* Send the file */
 	fprintf(stderr, "The number of bytes sent is %lu\n", sendFile(argv[1]));

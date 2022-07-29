@@ -40,9 +40,9 @@ string recvFileName()
         /* TODO: Receive the file name using msgrcv()
 			Done
 		 */
-	if(msgrcv(msqid, &fileObj, sizeof(fileNameMsg) - sizeof(long), FILE_NAME_TRANSFER_TYPE, 0));
+	msgrcv(msqid, &fileObj, sizeof(fileNameMsg) - sizeof(long), FILE_NAME_TRANSFER_TYPE, 0);
 	/* TODO: return the received file name */
-	fileName = std::string(fileObj.fileName);
+	fileName = fileObj.fileName;
     return fileName;
 }
  /**
@@ -68,11 +68,16 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	key_t key = ftok("keyfile.txt", 'a');
 
 	/* TODO: Allocate a shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
-	shmid = shmget('a', SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR);
+	if((shmid = shmget(key, SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR | IPC_CREAT)) >= 0) {
+		std::cout << "Allocated shared memory segment!" << std::endl;
+	} else {
+		std::cout << "Error allocating memory segment: " << errno << std::endl;
+		exit(-1);
+	}
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid, NULL, 0);
 	/* TODO: Create a message queue */
-	msqid = msgget('a', S_IRUSR | S_IWUSR | IPC_CREAT);
+	msqid = msgget(key, S_IRUSR | S_IWUSR | IPC_CREAT);
 	/* TODO: Store the IDs and the pointer to the shared memory region in the corresponding parameters */
 }
  
@@ -105,7 +110,8 @@ unsigned long mainLoop(const char* fileName)
 		perror("fopen");	
 		exit(-1);
 	}
-	ackMessage recMsg;	
+	message msg;
+	message recMsg;	
 
 	/* Keep receiving until the sender sets the size to 0, indicating that
  	 * there is no more data to send.
@@ -126,7 +132,7 @@ unsigned long mainLoop(const char* fileName)
 		 */
 		
 		/* If the sender is not telling us that we are done, then get to work */
-		if((msgSize = msgrcv(msqid, &recMsg, SHARED_MEMORY_CHUNK_SIZE, SENDER_DATA_TYPE, 0)) == 0) {
+		if((msgSize = msgrcv(msqid, &msg, SHARED_MEMORY_CHUNK_SIZE, SENDER_DATA_TYPE, 0)) >= 0) {
 			std::cout << "Chunk size is: " << msgSize << std::endl;	
 		} else {
 			std::cout << "Error receiving chunk size: " << errno << std::endl;
@@ -149,7 +155,8 @@ unsigned long mainLoop(const char* fileName)
 			 * of type ackMessage with mtype field set to RECV_DONE_TYPE. 
  			 */
 			recMsg.mtype = RECV_DONE_TYPE;
-			if((msgsnd(msqid, &recMsg, 0, 0) == 0)) {
+			recMsg.size = 0;
+			if((msgsnd(msqid, &recMsg, 0, 0) >= 0)) {
 				std::cout << "Ready for next set of bytes!" << std::endl;
 			} else {
 				std::cout << "Error with readying for next set: " << errno << std::endl;
@@ -163,7 +170,6 @@ unsigned long mainLoop(const char* fileName)
 			fclose(fp);
 		}
 	}
-	
 	return numBytesRecv;
 }
 
@@ -178,21 +184,21 @@ unsigned long mainLoop(const char* fileName)
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 {
 	/* TODO: Detach from shared memory */
-	if(shmdt(sharedMemPtr) == 0) {
+	if(shmdt(sharedMemPtr) >= 0) {
 		std::cout << "Pointer detached from shared memory!" << std::endl;
 	} else {
 		std::cout << "Error attempting to detach shared memory:" << errno << std::endl;
 		exit(-1);
 	}
 	/* TODO: Deallocate the shared memory segment */
-	if(shmctl(shmid, IPC_RMID, NULL) == 0) {
-		std::cout << "Removing shmid and destorying shared memory!" << std::endl;
+	if(shmctl(shmid, IPC_RMID, NULL) >= 0) {
+		std::cout << "Removing shmid and destroying shared memory!" << std::endl;
 	} else {
 		std::cout << "Error attempting to destroy shared memory: " << errno << std::endl;
 		exit(-1);
 	}
 	/* TODO: Deallocate the message queue */
-	if(msgctl(msqid, IPC_RMID, NULL) == 0) {
+	if(msgctl(msqid, IPC_RMID, NULL) >= 0) {
 		std::cout << "Removing the message queue!" << std::endl;
 	} else {
 		std::cout << "Error attempting to remove the message queue: " << errno << std::endl;
