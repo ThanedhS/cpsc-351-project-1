@@ -1,4 +1,5 @@
 #include <sys/shm.h>
+#include <sys/stat.h>
 #include <sys/msg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,10 +113,23 @@ unsigned long sendFile(const char* fileName)
 		/* TODO: Send a message to the receiver telling him that the data is ready
  		 * to be read (message of type SENDER_DATA_TYPE).
  		 */
+		sndMsg.mtype = SENDER_DATA_TYPE;
+		if((msgsnd(msqid, &sndMsg, numBytesSent, 0)) == 0) {
+			std::cout << "Sent message to receiver!" << std::endl;
+		} else {
+			std::cout << "Error when sending message to receiver: " << errno << std::endl;
+			exit(-1);
+		}
 		
 		/* TODO: Wait until the receiver sends us a message of type RECV_DONE_TYPE telling us 
  		 * that he finished saving a chunk of memory. 
  		 */
+		if((msgrcv(msqid, &rcvMsg, 0, RECV_DONE_TYPE, 0)) == 0) {
+			std::cout << "Received finish flag from receiver!" << std::endl;
+		} else {
+			std::cout << "Error receiving finish: " << errno << std::endl;
+			exit(-1);
+		}
 	}
 	
 
@@ -123,7 +137,14 @@ unsigned long sendFile(const char* fileName)
  	  * Lets tell the receiver that we have nothing more to send. We will do this by
  	  * sending a message of type SENDER_DATA_TYPE with size field set to 0. 	
 	  */
-
+	sndMsg.mtype = SENDER_DATA_TYPE;
+	numBytesSent = 0;
+	if((msgsnd(msqid, &sndMsg, numBytesSent, 0)) == 0) {
+		std::cout << "There is nothing more to send!" << std::endl;
+	} else {
+		std::cout << "Error in closing out message: " << errno << std::endl;
+		exit(-1);
+	}
 		
 	/* Close the file */
 	fclose(fp);

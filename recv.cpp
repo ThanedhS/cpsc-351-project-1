@@ -1,5 +1,6 @@
 #include <sys/shm.h>
 #include <sys/msg.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +65,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	   on the system has a unique id, but different objects may have the same key.
 	*/
 	
-	key_t key = ftok("keyfile.txt", 'a')
+	key_t key = ftok("keyfile.txt", 'a');
 
 	/* TODO: Allocate a shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
 	shmid = shmget('a', SHARED_MEMORY_CHUNK_SIZE, S_IRUSR | S_IWUSR);
@@ -93,7 +94,8 @@ unsigned long mainLoop(const char* fileName)
 	string recvFileNameStr = fileName;
 	
 	/* TODO: append __recv to the end of file name */
-	
+	recvFileNameStr += "__recv";
+
 	/* Open the file for writing */
 	FILE* fp = fopen(recvFileNameStr.c_str(), "w");
 			
@@ -103,7 +105,7 @@ unsigned long mainLoop(const char* fileName)
 		perror("fopen");	
 		exit(-1);
 	}
-		
+	ackMessage recMsg;	
 
 	/* Keep receiving until the sender sets the size to 0, indicating that
  	 * there is no more data to send.
@@ -124,6 +126,13 @@ unsigned long mainLoop(const char* fileName)
 		 */
 		
 		/* If the sender is not telling us that we are done, then get to work */
+		if((msgSize = msgrcv(msqid, &recMsg, SHARED_MEMORY_CHUNK_SIZE, SENDER_DATA_TYPE, 0)) == 0) {
+			std::cout << "Chunk size is: " << msgSize << std::endl;	
+		} else {
+			std::cout << "Error receiving chunk size: " << errno << std::endl;
+			exit(-1);
+		}
+
 		if(msgSize != 0)
 		{
 			/* TODO: count the number of bytes received */
@@ -132,12 +141,20 @@ unsigned long mainLoop(const char* fileName)
 			if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0)
 			{
 				perror("fwrite");
+				exit(-1);
 			}
 			
 			/* TODO: Tell the sender that we are ready for the next set of bytes. 
  			 * I.e., send a message of type RECV_DONE_TYPE. That is, a message
 			 * of type ackMessage with mtype field set to RECV_DONE_TYPE. 
  			 */
+			recMsg.mtype = RECV_DONE_TYPE;
+			if((msgsnd(msqid, &recMsg, 0, 0) == 0)) {
+				std::cout << "Ready for next set of bytes!" << std::endl;
+			} else {
+				std::cout << "Error with readying for next set: " << errno << std::endl;
+				exit(-1);
+			}
 		}
 		/* We are done */
 		else
