@@ -42,10 +42,10 @@ ran into, such as issues with segmentation faults due to some logic errors
 in the main loop and small errors such as incorrect parameters in the init 
 functions, as well as debugging and testing the program. 
 
-I, Thanedh Sithisombath, contributed by looking up information from the slides
-and seeing on how should it be done for project. I also did some of the Todos and 
-look at the others to see what. I also help by providing a way for us to share what 
-we got through github by creating repo for the project. I also ask to see what if we
-are missing from the project requirements. Also I try to see if there is anything is
-wrong in the code because of errors from the program to see if it is testing the
-program.
+I, Thanedh Sithisombath, contributed by looking up for information for the project 
+from the slides and seeing on how should it be done for project. I also did some of 
+the Todos and look at the others Todos. I also help my teammates by providing an way 
+for all of us to share what we got through github by creating repository for the project.
+I also ask to see what if there is anything missing from the project requirements.
+Lastly, I try to see if there is anything is wrong in the code because I want to know if there 
+are any kinds of errors that could be fix so that the program will work property.
