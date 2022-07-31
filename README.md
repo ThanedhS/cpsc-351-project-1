@@ -6,13 +6,13 @@
 
 ## How to run the program
 Open up two command prompts/terminals then use the following commands:
-1. ./sender <filename>.<ext> in one terminal
+1. ./sender \<filename\>.\<ext\> in one terminal
 2. ./recv in the other
 3. You will see that the terminal with the sender program
    will show that it found a receive flag and sent the relevant
    data to the receiver program.
 4. You will see a new file with __recv appended to the end of it, which
-   should be a copy of <filename>.<ext>
+   should be a copy of \<filename\>.\<ext\>
 
 
 ## Work Distribution
