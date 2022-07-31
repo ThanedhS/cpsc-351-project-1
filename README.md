@@ -41,3 +41,11 @@ Greg Zhang. Furthermore, I provided support for any issues that my teammates
 ran into, such as issues with segmentation faults due to some logic errors
 in the main loop and small errors such as incorrect parameters in the init 
 functions, as well as debugging and testing the program. 
+
+I, Thanedh Sithisombath, contributed by looking up information from the slides
+and seeing on how should it be done for project. I also did some of the Todos and 
+look at the others to see what. I also help by providing a way for us to share what 
+we got through github by creating repo for the project. I also ask to see what if we
+are missing from the project requirements. Also I try to see if there is anything is
+wrong in the code because of errors from the program to see if it is testing the
+program.
