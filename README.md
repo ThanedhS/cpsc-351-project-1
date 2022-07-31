@@ -49,3 +49,8 @@ for all of us to share what we got through github by creating repository for the
 I also ask to see what if there is anything missing from the project requirements.
 Lastly, I try to see if there is anything is wrong in the code because I want to know if there 
 are any kinds of errors that could be fix so that the program will work property.
+
+I, Greg Zhang, contributed to the project by looking up examples and working on
+the loop functions. I worked with my groupmates to resolve issues within the code. 
+Lastly, I worked extensively on the design document of our project, creating it and 
+gathering information and ideas from each of the other group members to do so.
