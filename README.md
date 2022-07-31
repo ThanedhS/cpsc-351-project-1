@@ -24,3 +24,11 @@ with the other tasks within the project, my group members were able
 to help solve the problems and provide the code needed. Lastly, my 
 contribution consisted of creating and writing parts of the README.md 
 and helping with the design documentation.
+
+I, Eddie Poulson, contributed by writing the code for all the functions
+sans the init functions in sender.cpp and recv.cpp, which were written
+by Christian Verry, and the main loop functions that were worked on by 
+Greg Zhang. Furthermore, I provided support for any issues that my teammates
+ran into, such as issues with segmentation faults due to some logic errors
+in the main loop and small errors such as incorrect parameters in the init 
+functions, as well as debugging and testing the program. 
