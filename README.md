@@ -4,6 +4,9 @@
 3. Thanedh Sithisombath, Section 01, thanedh@csu.fullerton.edu
 4. Greg Zhang, Section 01, ziyangz@csu.fullerton.edu
 
+## Language
+C++
+
 ## How to run the program
 Open up two command prompts/terminals then use the following commands:
 1. ./sender \<filename\>.\<ext\> in one terminal
